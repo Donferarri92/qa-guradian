@@ -18,32 +18,32 @@ const useAuth = () => useContext(AuthContext);
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('qa_token'));
+  const [token, setToken] = useState(() => localStorage.getItem('qa_token'));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      fetchUser();
-    } else {
+    const fetchUser = async () => {
+      if (token) {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        try {
+          const res = await axios.get(`${API}/auth/me`);
+          setUser(res.data);
+        } catch (e) {
+          localStorage.removeItem('qa_token');
+          setToken(null);
+          setUser(null);
+          delete axios.defaults.headers.common['Authorization'];
+        }
+      }
       setLoading(false);
-    }
+    };
+    fetchUser();
   }, [token]);
-
-  const fetchUser = async () => {
-    try {
-      const res = await axios.get(`${API}/auth/me`);
-      setUser(res.data);
-    } catch (e) {
-      logout();
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const login = async (email, password) => {
     const res = await axios.post(`${API}/auth/login`, { email, password });
     localStorage.setItem('qa_token', res.data.token);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
     setToken(res.data.token);
     setUser(res.data.user);
     return res.data;
@@ -52,6 +52,7 @@ const AuthProvider = ({ children }) => {
   const register = async (name, email, password) => {
     const res = await axios.post(`${API}/auth/register`, { name, email, password });
     localStorage.setItem('qa_token', res.data.token);
+    axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
     setToken(res.data.token);
     setUser(res.data.user);
     return res.data;
