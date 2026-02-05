@@ -1215,20 +1215,66 @@ async def get_test_run(run_id: str, user: dict = Depends(get_current_user)):
 # ==================== CHECKLIST ROUTES ====================
 
 DAILY_CHECKLIST_ITEMS = [
-    {"item_text": "Homepage loads without errors", "category": "Functionality"},
-    {"item_text": "All main navigation links work", "category": "Functionality"},
-    {"item_text": "Product images load correctly", "category": "Visual"},
-    {"item_text": "Add to cart functionality works", "category": "E-commerce"},
-    {"item_text": "Cart displays correct items and prices", "category": "E-commerce"},
-    {"item_text": "Checkout process initiates correctly", "category": "E-commerce"},
-    {"item_text": "Search functionality returns results", "category": "Functionality"},
-    {"item_text": "Mobile menu opens and closes", "category": "Mobile"},
-    {"item_text": "Contact forms are accessible", "category": "Functionality"},
-    {"item_text": "Footer links are functional", "category": "Functionality"},
-    {"item_text": "No console errors on page load", "category": "Technical"},
-    {"item_text": "Page load time is acceptable (<3s)", "category": "Performance"},
-    {"item_text": "SSL certificate is valid", "category": "Security"},
-    {"item_text": "Cookie consent appears if required", "category": "Compliance"}
+    # --- Critical Functionality ---
+    {"item_text": "Homepage loads successfully (200 OK)", "category": "Critical"},
+    {"item_text": "No critical console errors (Red logs)", "category": "Critical"},
+    {"item_text": "Login/Registration flows work correctly", "category": "Critical"},
+    {"item_text": "Add to Cart functions properly", "category": "Critical"},
+    {"item_text": "Checkout payment gateway loads", "category": "Critical"},
+
+    # --- Header & Navigation ---
+    {"item_text": "Logo links back to homepage", "category": "Navigation"},
+    {"item_text": "Main menu dropdowns open/close smoothly", "category": "Navigation"},
+    {"item_text": "Search bar suggestions appear on typing", "category": "Navigation"},
+    {"item_text": "Search results are relevant to query", "category": "Navigation"},
+    {"item_text": "Sticky header stays visible on scroll", "category": "Navigation"},
+    {"item_text": "Mobile hamburger menu works", "category": "Navigation"},
+
+    # --- Product Listing (PLP) ---
+    {"item_text": "Product images load (no broken icons)", "category": "PLP"},
+    {"item_text": "Sorting (Price, Newest) works accurately", "category": "PLP"},
+    {"item_text": "Filters (Category, Color) update results", "category": "PLP"},
+    {"item_text": "Pagination/Infinite scroll loads next items", "category": "PLP"},
+    {"item_text": "Quick View modal opens correctly", "category": "PLP"},
+
+    # --- Product Detail (PDP) ---
+    {"item_text": "Product title and price are correct", "category": "PDP"},
+    {"item_text": "Image gallery zoom/thumbnails work", "category": "PDP"},
+    {"item_text": "Variant selection (Size/Color) updates price", "category": "PDP"},
+    {"item_text": "'Out of Stock' logic works for unavailable items", "category": "PDP"},
+    {"item_text": "Related products section is populated", "category": "PDP"},
+    {"item_text": "Description/Reviews tabs toggle correctly", "category": "PDP"},
+
+    # --- Cart & Checkout ---
+    {"item_text": "Mini-cart updates immediately on add", "category": "Cart"},
+    {"item_text": "Cart page shows correct total calculation", "category": "Cart"},
+    {"item_text": "Update Quantity (+/-) reflects in total", "category": "Cart"},
+    {"item_text": "Remove item deletes from cart", "category": "Cart"},
+    {"item_text": "Coupon code field accepts valid codes", "category": "Checkout"},
+    {"item_text": "Shipping address validation triggers errors", "category": "Checkout"},
+    {"item_text": "Order success page shows Order ID", "category": "Checkout"},
+
+    # --- User Account ---
+    {"item_text": "Password reset email is triggered", "category": "Account"},
+    {"item_text": "Order history displays past orders", "category": "Account"},
+    {"item_text": "Profile details can be updated", "category": "Account"},
+    {"item_text": "Address book allows adding new address", "category": "Account"},
+
+    # --- Visual & UX (Minor) ---
+    {"item_text": "Favicon is visible in browser tab", "category": "Visual"},
+    {"item_text": "No horizontal scrolling on mobile view", "category": "Visual"},
+    {"item_text": "Fonts load correctly (no default times new roman)", "category": "Visual"},
+    {"item_text": "Buttons have hover/active states", "category": "Visual"},
+    {"item_text": "Breadcrumbs navigation is accurate", "category": "Visual"},
+    {"item_text": "Footer links (Terms, Privacy) are not broken", "category": "Visual"},
+    {"item_text": "Social media icons open in new tabs", "category": "Visual"},
+    {"item_text": "404 Page (broken link) is styled correctly", "category": "Visual"},
+
+    # --- Technical/Performance ---
+    {"item_text": "First Contentful Paint < 2.5s", "category": "Performance"},
+    {"item_text": "SSL Certificate is valid (HTTPS lock)", "category": "Security"},
+    {"item_text": "Meta titles/descriptions exist for SEO", "category": "SEO"},
+]    {"item_text": "Cookie consent appears if required", "category": "Compliance"}
 ]
 
 WEEKLY_CHECKLIST_ITEMS = [
