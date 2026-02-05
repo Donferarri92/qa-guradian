@@ -1178,7 +1178,8 @@ async def create_test_run(run_data: TestRunCreate, background_tasks: BackgroundT
     run_dict = run.model_dump()
     run_dict['started_at'] = run_dict['started_at'].isoformat()
     
-    await db.test_runs.insert_one(run_dict)
+    # Insert and then remove _id for response
+    await db.test_runs.insert_one(run_dict.copy())
     
     # Start background task
     background_tasks.add_task(execute_test_run, run.id, env['url'], run_data.suite_type)
