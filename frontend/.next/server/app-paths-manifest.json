@@ -1,0 +1,12 @@
+{
+  "/_not-found": "app/_not-found.js",
+  "/login/page": "app/login/page.js",
+  "/page": "app/page.js",
+  "/dashboard/checklists/page": "app/dashboard/checklists/page.js",
+  "/dashboard/runs/[id]/page": "app/dashboard/runs/[id]/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/dashboard/reports/page": "app/dashboard/reports/page.js",
+  "/dashboard/runs/page": "app/dashboard/runs/page.js",
+  "/dashboard/settings/page": "app/dashboard/settings/page.js",
+  "/dashboard/suites/page": "app/dashboard/suites/page.js"
+}

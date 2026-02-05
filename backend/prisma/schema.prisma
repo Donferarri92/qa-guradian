@@ -1,0 +1,219 @@
+// Prisma Schema for QA Guardian
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  TESTER
+  VIEWER
+}
+
+enum TestSuiteType {
+  DAILY
+  WEEKLY
+}
+
+enum TestCaseType {
+  AUTOMATED
+  MANUAL
+}
+
+enum Severity {
+  P0
+  P1
+  P2
+}
+
+enum RunStatus {
+  PENDING
+  RUNNING
+  PASSED
+  FAILED
+  CANCELLED
+}
+
+enum ResultStatus {
+  PASSED
+  FAILED
+  SKIPPED
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String?
+  role          Role      @default(TESTER)
+  name          String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
+  
+  testRuns      TestRun[]
+  magicLinks    MagicLink[]
+  
+  @@map("users")
+}
+
+model MagicLink {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+  
+  @@map("magic_links")
+}
+
+model Environment {
+  id           String    @id @default(uuid())
+  name         String
+  baseUrl      String
+  isProduction Boolean   @default(false)
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  testRuns     TestRun[]
+  
+  @@map("environments")
+}
+
+model TestSuite {
+  id          String        @id @default(uuid())
+  name        String
+  description String?
+  type        TestSuiteType
+  schedule    String?       // Cron expression
+  enabled     Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  testCases   TestCase[]
+  testRuns    TestRun[]
+  
+  @@map("test_suites")
+}
+
+model TestCase {
+  id              String       @id @default(uuid())
+  suiteId         String
+  suite           TestSuite    @relation(fields: [suiteId], references: [id], onDelete: Cascade)
+  name            String
+  description     String?
+  type            TestCaseType
+  severity        Severity     @default(P1)
+  steps           Json?        // For manual tests
+  playwrightFile  String?      // For automated tests
+  playwrightTest  String?      // Test name within file
+  enabled         Boolean      @default(true)
+  order           Int          @default(0)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  
+  results         TestResult[]
+  
+  @@map("test_cases")
+}
+
+model TestRun {
+  id             String     @id @default(uuid())
+  suiteId        String
+  suite          TestSuite  @relation(fields: [suiteId], references: [id])
+  environmentId  String
+  environment    Environment @relation(fields: [environmentId], references: [id])
+  triggeredById  String?
+  triggeredBy    User?      @relation(fields: [triggeredById], references: [id])
+  status         RunStatus  @default(PENDING)
+  startedAt      DateTime?
+  completedAt    DateTime?
+  totalTests     Int        @default(0)
+  passedTests    Int        @default(0)
+  failedTests    Int        @default(0)
+  skippedTests   Int        @default(0)
+  duration       Int?       // In milliseconds
+  metrics        Json?      // Lighthouse scores, etc.
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  
+  results        TestResult[]
+  reports        Report[]
+  
+  @@map("test_runs")
+}
+
+model TestResult {
+  id            String       @id @default(uuid())
+  runId         String
+  run           TestRun      @relation(fields: [runId], references: [id], onDelete: Cascade)
+  testCaseId    String
+  testCase      TestCase     @relation(fields: [testCaseId], references: [id])
+  status        ResultStatus
+  error         String?
+  logs          String?
+  screenshotUrl String?
+  videoUrl      String?
+  duration      Int?         // In milliseconds
+  metadata      Json?        // Additional test-specific data
+  manualNotes   String?      // For manual checklist items
+  createdAt     DateTime     @default(now())
+  
+  @@map("test_results")
+}
+
+model Report {
+  id          String    @id @default(uuid())
+  runId       String
+  run         TestRun   @relation(fields: [runId], references: [id], onDelete: Cascade)
+  pdfUrl      String?
+  jsonUrl     String?
+  csvUrl      String?
+  shareToken  String    @unique @default(uuid())
+  isPublic    Boolean   @default(false)
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  
+  @@map("reports")
+}
+
+model Checklist {
+  id          String          @id @default(uuid())
+  name        String
+  description String?
+  type        TestSuiteType
+  isDefault   Boolean         @default(false)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  
+  items       ChecklistItem[]
+  
+  @@map("checklists")
+}
+
+model ChecklistItem {
+  id          String    @id @default(uuid())
+  checklistId String
+  checklist   Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  text        String
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  
+  @@map("checklist_items")
+}
+
+model Setting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("settings")
+}
