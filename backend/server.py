@@ -1274,7 +1274,7 @@ DAILY_CHECKLIST_ITEMS = [
     {"item_text": "First Contentful Paint < 2.5s", "category": "Performance"},
     {"item_text": "SSL Certificate is valid (HTTPS lock)", "category": "Security"},
     {"item_text": "Meta titles/descriptions exist for SEO", "category": "SEO"},
-]    {"item_text": "Cookie consent appears if required", "category": "Compliance"}
+    {"item_text": "Cookie consent appears if required", "category": "Compliance"}
 ]
 
 WEEKLY_CHECKLIST_ITEMS = [
