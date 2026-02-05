@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import axios from 'axios';
-import { 
+import {
   CheckCircle, RefreshCw, XCircle, Clock, Play, ExternalLink, Download, AlertTriangle
 } from 'lucide-react';
 
@@ -117,8 +117,31 @@ export const RunDetailPage = () => {
     }
   };
 
-  const downloadPdf = () => {
-    window.open(`${API}/reports/${runId}/pdf`, '_blank');
+  const downloadPdf = async () => {
+    try {
+      const token = localStorage.getItem('qa_token');
+      console.log('PDF Download - Token:', token ? 'Present' : 'Missing');
+      if (!token) {
+        alert('Authentication Error: No login token found. Please logging in again.');
+        return;
+      }
+      const response = await axios.get(`${API}/reports/${runId}/pdf?token=${token}`, {
+        responseType: 'blob',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `qa-report-${runId.slice(0, 8)}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } catch (error) {
+      console.error('Failed to download PDF', error);
+      alert('Failed to download PDF: ' + (error.response?.data?.detail || error.message));
+    }
   };
 
   const getResultIcon = (status) => {

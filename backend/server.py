@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, BackgroundTasks
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, BackgroundTasks, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -41,7 +41,7 @@ JWT_ALGORITHM = "HS256"
 # Create the main app
 app = FastAPI(title="QA Guardian API")
 api_router = APIRouter(prefix="/api")
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -151,9 +151,20 @@ def create_token(user_id: str, email: str) -> str:
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    try:
+async def get_current_user(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
+    token_query: Optional[str] = Query(None, alias="token")
+):
+    token = None
+    if credentials:
         token = credentials.credentials
+    elif token_query:
+        token = token_query
+        
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
         user = await db.users.find_one({"id": payload["user_id"]}, {"_id": 0})
         if not user:
@@ -1426,9 +1437,15 @@ app.include_router(api_router)
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:3000",
+        "https://qa-guardian.vercel.app",
+        "https://qa-guardian-fbujqar4a-akash-sharmas-projects-468814ef.vercel.app",
+        "https://qa-guardian-cs4p79rl5-akash-sharmas-projects-468814ef.vercel.app"
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
+
 )
 
 @app.on_event("shutdown")
