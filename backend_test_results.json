@@ -1,0 +1,86 @@
+{
+  "timestamp": "2026-02-05T08:37:22.441136",
+  "total_tests": 13,
+  "passed_tests": 13,
+  "success_rate": 100.0,
+  "results": [
+    {
+      "test": "User Registration",
+      "success": true,
+      "message": "User registered successfully with ID: a09779df-3228-4432-a63e-595a64e76f1a",
+      "details": {}
+    },
+    {
+      "test": "Get User Profile",
+      "success": true,
+      "message": "Profile retrieved for: Test User 1770280636",
+      "details": {}
+    },
+    {
+      "test": "Get Environments",
+      "success": true,
+      "message": "Found 1 environments",
+      "details": {}
+    },
+    {
+      "test": "Create Daily Test Run",
+      "success": true,
+      "message": "Daily test run created with ID: 551eaa19-33ed-4df6-9df3-ada7a3c3b832",
+      "details": {}
+    },
+    {
+      "test": "Create Weekly Test Run",
+      "success": true,
+      "message": "Weekly test run created with ID: c1390366-04ca-4b89-913d-5a61a5a892ca",
+      "details": {}
+    },
+    {
+      "test": "Get Test Runs",
+      "success": true,
+      "message": "Retrieved 2 test runs",
+      "details": {}
+    },
+    {
+      "test": "Get Test Run Detail",
+      "success": true,
+      "message": "Retrieved details for run: running",
+      "details": {}
+    },
+    {
+      "test": "Get Checklists",
+      "success": true,
+      "message": "Retrieved 30 checklist items",
+      "details": {}
+    },
+    {
+      "test": "Update Checklist Item",
+      "success": true,
+      "message": "Updated checklist item 5cdf9c40-8f5b-4aea-8e83-e237783e5617",
+      "details": {}
+    },
+    {
+      "test": "Reset Checklists",
+      "success": true,
+      "message": "Daily checklist reset successfully",
+      "details": {}
+    },
+    {
+      "test": "Get Reports",
+      "success": true,
+      "message": "Retrieved 0 reports",
+      "details": {}
+    },
+    {
+      "test": "Generate PDF Report",
+      "success": true,
+      "message": "PDF generated successfully (4003 bytes)",
+      "details": {}
+    },
+    {
+      "test": "Dashboard Stats",
+      "success": true,
+      "message": "Stats retrieved: 2 total runs, 57.5% avg pass rate",
+      "details": {}
+    }
+  ]
+}
