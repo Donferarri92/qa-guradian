@@ -1343,122 +1343,123 @@ async def generate_pdf_report(run_id: str, user: dict = Depends(get_current_user
         styles = getSampleStyleSheet()
         
         
-    # Custom styles
-    title_style = ParagraphStyle('Title', parent=styles['Heading1'], fontSize=24, spaceAfter=30, alignment=TA_CENTER)
-    heading_style = ParagraphStyle('Heading', parent=styles['Heading2'], fontSize=16, spaceAfter=12, spaceBefore=20)
-    normal_style = ParagraphStyle('Normal', parent=styles['Normal'], fontSize=10, spaceAfter=6)
-    rec_style = ParagraphStyle('Recommendation', parent=styles['Normal'], fontSize=10, spaceAfter=6, leftIndent=20, bulletIndent=10)
+        # Custom styles
+        title_style = ParagraphStyle('Title', parent=styles['Heading1'], fontSize=24, spaceAfter=30, alignment=TA_CENTER)
+        heading_style = ParagraphStyle('Heading', parent=styles['Heading2'], fontSize=16, spaceAfter=12, spaceBefore=20)
+        normal_style = ParagraphStyle('Normal', parent=styles['Normal'], fontSize=10, spaceAfter=6)
+        rec_style = ParagraphStyle('Recommendation', parent=styles['Normal'], fontSize=10, spaceAfter=6, leftIndent=20, bulletIndent=10)
 
-    elements = []
-    
-    # --- HEADER WITH LOGOS ---
-    try:
-        # Load Images (ensure they exist in root)
-        logo_kuberha = Image('kuberha_logo.png', width=1.5*inch, height=1.5*inch)
-        logo_casacarigar = Image('casacarigar_logo.png', width=1.2*inch, height=1.2*inch)
+
+        elements = []
         
-        # Header Table
-        header_data = [[logo_kuberha, Spacer(1, 10), logo_casacarigar]]
-        header_table = Table(header_data, colWidths=[2*inch, 2*inch, 2*inch])
-        header_table.setStyle(TableStyle([
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ]))
-        elements.append(header_table)
+        # --- HEADER WITH LOGOS ---
+        try:
+            # Load Images (ensure they exist in root)
+            logo_kuberha = Image('kuberha_logo.png', width=1.5*inch, height=1.5*inch)
+            logo_casacarigar = Image('casacarigar_logo.png', width=1.2*inch, height=1.2*inch)
+            
+            # Header Table
+            header_data = [[logo_kuberha, Spacer(1, 10), logo_casacarigar]]
+            header_table = Table(header_data, colWidths=[2*inch, 2*inch, 2*inch])
+            header_table.setStyle(TableStyle([
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ]))
+            elements.append(header_table)
+            elements.append(Spacer(1, 20))
+        except Exception as img_err:
+            logger.warning(f"Could not load logos: {img_err}")
+    
+        # Title
+        elements.append(Paragraph("QA Guardian Test Report", title_style))
         elements.append(Spacer(1, 20))
-    except Exception as img_err:
-        logger.warning(f"Could not load logos: {img_err}")
-
-    # Title
-    elements.append(Paragraph("QA Guardian Test Report", title_style))
-    elements.append(Spacer(1, 20))
-    
-    # Summary info
-    elements.append(Paragraph(f"<b>Environment:</b> {run.get('environment_url', 'N/A')}", normal_style))
-    elements.append(Paragraph(f"<b>Test Type:</b> {run.get('suite_type', 'N/A').title()} Tests", normal_style))
-    elements.append(Paragraph(f"<b>Date:</b> {run.get('started_at', 'N/A')[:19].replace('T', ' ')}", normal_style))
-    elements.append(Paragraph(f"<b>Status:</b> {run.get('status', 'N/A').title()}", normal_style))
-    elements.append(Spacer(1, 20))
-    
-    # Summary table
-    summary = run.get('summary', {})
-    summary_data = [
-        ['Metric', 'Value'],
-        ['Total Tests', str(summary.get('total', 0))],
-        ['Passed', str(summary.get('passed', 0))],
-        ['Failed', str(summary.get('failed', 0))],
-        ['Warnings', str(summary.get('warnings', 0))],
-        ['Pass Rate', f"{summary.get('pass_rate', 0)}%"]
-    ]
-    
-    summary_table = Table(summary_data, colWidths=[200, 150])
-    summary_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1a1a2e')),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 12),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f8f9fa')),
-        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#dee2e6'))
-    ]))
-    elements.append(summary_table)
-    elements.append(Spacer(1, 30))
-    
-    # Test Results
-    elements.append(Paragraph("Test Results", heading_style))
-    
-    results = run.get('results', [])
-    for result in results:
-        status = result.get('status', 'unknown')
-        status_color = '#28a745' if status == 'passed' else '#dc3545' if status == 'failed' else '#ffc107'
         
-        # Sanitize inputs
-        test_name = result.get('test_name', 'Unknown').replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-        message = result.get('message', '').replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+        # Summary info
+        elements.append(Paragraph(f"<b>Environment:</b> {run.get('environment_url', 'N/A')}", normal_style))
+        elements.append(Paragraph(f"<b>Test Type:</b> {run.get('suite_type', 'N/A').title()} Tests", normal_style))
+        elements.append(Paragraph(f"<b>Date:</b> {run.get('started_at', 'N/A')[:19].replace('T', ' ')}", normal_style))
+        elements.append(Paragraph(f"<b>Status:</b> {run.get('status', 'N/A').title()}", normal_style))
+        elements.append(Spacer(1, 20))
         
-        elements.append(Paragraph(
-            f"<b>{test_name}</b> - "
-            f"<font color='{status_color}'>{status.upper()}</font>",
-            normal_style
-        ))
-        elements.append(Paragraph(f"   {message}", normal_style))
-        
-        # Add details if present
-        details = result.get('details', {})
-        if details:
-            sanitized_details = {k: str(v).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;') for k, v in details.items()}
-            details_str = ', '.join([f"{k}: {v}" for k, v in list(sanitized_details.items())[:5]])
-            elements.append(Paragraph(f"   <i>Details: {details_str}</i>", normal_style))
-        
-        elements.append(Spacer(1, 10))
-    
-    # --- RECOMMENDATIONS SECTION ---
-    elements.append(Spacer(1, 20))
-    elements.append(Paragraph("Recommendations", heading_style))
-    
-    if run.get('suite_type') == 'daily':
-        recs = [
-            "Monitor critical flows (Login, Checkout) daily.",
-            "If smoke tests fail, stop deployment immediately.",
-            "Verify payment gateway integration manually if iframe fails."
+        # Summary table
+        summary = run.get('summary', {})
+        summary_data = [
+            ['Metric', 'Value'],
+            ['Total Tests', str(summary.get('total', 0))],
+            ['Passed', str(summary.get('passed', 0))],
+            ['Failed', str(summary.get('failed', 0))],
+            ['Warnings', str(summary.get('warnings', 0))],
+            ['Pass Rate', f"{summary.get('pass_rate', 0)}%"]
         ]
-    else:
-        recs = [
-            "Fix all 'Red' console errors on priority pages.",
-            "Optimize images for LCP < 2.5s (Lighthouse goal).",
-            "Verify cross-browser compatibility on Safari iOS.",
-            "Update SEO meta tags for new product listings."
-        ]
+        
+        summary_table = Table(summary_data, colWidths=[200, 150])
+        summary_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1a1a2e')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f8f9fa')),
+            ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#dee2e6'))
+        ]))
+        elements.append(summary_table)
+        elements.append(Spacer(1, 30))
+        
+        # Test Results
+        elements.append(Paragraph("Test Results", heading_style))
+        
+        results = run.get('results', [])
+        for result in results:
+            status = result.get('status', 'unknown')
+            status_color = '#28a745' if status == 'passed' else '#dc3545' if status == 'failed' else '#ffc107'
+            
+            # Sanitize inputs
+            test_name = result.get('test_name', 'Unknown').replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+            message = result.get('message', '').replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+            
+            elements.append(Paragraph(
+                f"<b>{test_name}</b> - "
+                f"<font color='{status_color}'>{status.upper()}</font>",
+                normal_style
+            ))
+            elements.append(Paragraph(f"   {message}", normal_style))
+            
+            # Add details if present
+            details = result.get('details', {})
+            if details:
+                sanitized_details = {k: str(v).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;') for k, v in details.items()}
+                details_str = ', '.join([f"{k}: {v}" for k, v in list(sanitized_details.items())[:5]])
+                elements.append(Paragraph(f"   <i>Details: {details_str}</i>", normal_style))
+            
+            elements.append(Spacer(1, 10))
+        
+        # --- RECOMMENDATIONS SECTION ---
+        elements.append(Spacer(1, 20))
+        elements.append(Paragraph("Recommendations", heading_style))
+        
+        if run.get('suite_type') == 'daily':
+            recs = [
+                "Monitor critical flows (Login, Checkout) daily.",
+                "If smoke tests fail, stop deployment immediately.",
+                "Verify payment gateway integration manually if iframe fails."
+            ]
+        else:
+            recs = [
+                "Fix all 'Red' console errors on priority pages.",
+                "Optimize images for LCP < 2.5s (Lighthouse goal).",
+                "Verify cross-browser compatibility on Safari iOS.",
+                "Update SEO meta tags for new product listings."
+            ]
+        
+        for rec in recs:
+            elements.append(Paragraph(f"• {rec}", rec_style))
     
-    for rec in recs:
-        elements.append(Paragraph(f"• {rec}", rec_style))
-
-    # Footer
-    elements.append(Spacer(1, 30))
-    elements.append(Paragraph("Generated by QA Guardian | Powered by Kuberha.ai", ParagraphStyle('Footer', parent=styles['Normal'], fontSize=8, alignment=TA_CENTER, textColor=colors.grey)))
-    
-    doc.build(elements)
+        # Footer
+        elements.append(Spacer(1, 30))
+        elements.append(Paragraph("Generated by QA Guardian | Powered by Kuberha.ai", ParagraphStyle('Footer', parent=styles['Normal'], fontSize=8, alignment=TA_CENTER, textColor=colors.grey)))
+        
+        doc.build(elements)
         buffer.seek(0)
         
         return StreamingResponse(
