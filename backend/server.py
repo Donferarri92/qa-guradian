@@ -1483,12 +1483,7 @@ app.include_router(api_router)
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=[
-        "http://localhost:3000",
-        "https://qa-guardian.vercel.app",
-        "https://qa-guardian-fbujqar4a-akash-sharmas-projects-468814ef.vercel.app",
-        "https://qa-guardian-cs4p79rl5-akash-sharmas-projects-468814ef.vercel.app"
-    ],
+    allow_origin_regex=r"https://qa-guardian.*\.vercel\.app|http://localhost:3000",
     allow_methods=["*"],
     allow_headers=["*"],
 
