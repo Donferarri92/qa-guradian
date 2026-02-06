@@ -23,8 +23,30 @@ const ReportsPage = () => {
     }
   };
 
-  const downloadPdf = (runId) => {
-    window.open(`${API}/reports/${runId}/pdf`, '_blank');
+  const downloadPdf = async (runId) => {
+    try {
+      const token = localStorage.getItem('qa_token');
+      if (!token) {
+        alert('Authentication Error: No login token found. Please logging in again.');
+        return;
+      }
+      const response = await axios.get(`${API}/reports/${runId}/pdf?token=${token}`, {
+        responseType: 'blob',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `qa-report-${runId.slice(0, 8)}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } catch (error) {
+      console.error('Failed to download PDF', error);
+      alert('Failed to download PDF: ' + (error.response?.data?.detail || error.message));
+    }
   };
 
   if (loading) {
@@ -55,8 +77,8 @@ const ReportsPage = () => {
                 <span className="failed">{report.summary?.failed || 0} failed</span>
                 <span className="rate">{report.summary?.pass_rate || 0}%</span>
               </div>
-              <button 
-                className="download-btn" 
+              <button
+                className="download-btn"
                 onClick={() => downloadPdf(report.id)}
                 data-testid={`download-${report.id}`}
               >
