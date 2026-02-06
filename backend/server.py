@@ -605,7 +605,104 @@ class QATestEngine:
             "Content-Security-Policy": headers.get("Content-Security-Policy"),
             "Referrer-Policy": headers.get("Referrer-Policy")
         }
+
+        missing = [param for param, val in security_headers.items() if not val]
         
+        if not missing:
+            return TestResult(
+                test_case_id="weekly-001",
+                test_name="Security Headers",
+                status="passed",
+                message="All security headers present",
+                details=security_headers,
+                duration_ms=int(duration)
+            )
+        return TestResult(
+            test_case_id="weekly-001",
+            test_name="Security Headers",
+            status="warning",
+            message=f"Missing security headers: {', '.join(missing)}",
+            details=security_headers,
+            duration_ms=int(duration)
+        )
+
+    async def test_footer_structure(self) -> TestResult:
+        """Verify Footer availability and links (CasaCarigar Specific)"""
+        status, html, duration, _ = await self.fetch_page(self.base_url)
+        if status != 200:
+            return TestResult(
+                test_case_id="weekly-footer",
+                test_name="Footer Verification",
+                status="failed",
+                message="Could not fetch page to verify footer",
+                details={},
+                duration_ms=int(duration)
+            )
+        
+        soup = BeautifulSoup(html, 'html.parser')
+        # Try to find a footer element (semantic or class)
+        footer = soup.find('footer') or soup.find('div', class_=lambda x: x and 'footer' in x.lower())
+        
+        if not footer:
+            return TestResult(
+                test_case_id="weekly-footer",
+                test_name="Footer Verification",
+                status="failed",
+                message="Footer section not found in HTML",
+                details={},
+                duration_ms=int(duration)
+            )
+        
+        # Check text/sections presence (heuristics)
+        footer_text = footer.get_text().lower()
+        sections = {
+            "quick_links": "quick links" in footer_text or "links" in footer_text,
+            "support": "support" in footer_text or "help" in footer_text,
+            "account": "account" in footer_text or "login" in footer_text,
+            "subscribe": "subscribe" in footer_text or "newsletter" in footer_text or "email" in footer_text
+        }
+        
+        # Check specific links
+        links = footer.find_all('a', href=True)
+        link_checks = {
+            "blogs": any("/blogs" in l['href'] for l in links),
+            "about": any("about" in l['href'].lower() for l in links),
+            "contact": any("contact" in l['href'].lower() for l in links),
+            "policies": any("policy" in l['href'].lower() or "terms" in l['href'].lower() for l in links)
+        }
+        
+        score = sum(sections.values()) + sum(link_checks.values())
+        total = len(sections) + len(link_checks)
+        
+        details = {**sections, **link_checks, "total_footer_links": len(links)}
+        
+        if score == total:
+             return TestResult(
+                test_case_id="weekly-footer",
+                test_name="Footer Verification",
+                status="passed",
+                message="Footer structure and links verified successfully",
+                details=details,
+                duration_ms=int(duration)
+            )
+        elif score > total / 2:
+             return TestResult(
+                test_case_id="weekly-footer",
+                test_name="Footer Verification",
+                status="warning",
+                message=f"Footer found but missing some sections/links ({score}/{total})",
+                details=details,
+                duration_ms=int(duration)
+            )
+        
+        return TestResult(
+            test_case_id="weekly-footer",
+            test_name="Footer Verification",
+            status="failed",
+            message="Footer structure incomplete or missing crucial links",
+            details=details,
+            duration_ms=int(duration)
+        )
         present = sum(1 for v in security_headers.values() if v)
         total = len(security_headers)
         
@@ -1058,7 +1155,11 @@ class QATestEngine:
             self.test_robots_txt(),
             self.test_sitemap(),
             self.test_compression(),
-            self.test_cache_headers()
+            self.test_cache_headers(),
+            self.test_footer_structure(),  # New automated footer check
+            self.test_console_errors(),    # Reuse daily tests for depth
+            self.test_forms_present(),
+            self.test_response_time()      # Performance baseline
         ]
         weekly_results = await asyncio.gather(*weekly_tests)
         
@@ -1277,7 +1378,41 @@ WEEKLY_CHECKLIST_ITEMS = [
     # Performance & SEO
     {"item_text": "Lighthouse Score > 90 for SEO", "category": "Performance"},
     {"item_text": "No 404 links found in footer/blog", "category": "SEO"},
-    {"item_text": "Meta tags exist for all new products", "category": "SEO"}
+    {"item_text": "Meta tags exist for all new products", "category": "SEO"},
+
+    # --- Footer Verification (CasaCarigar Specific) ---
+    # UI & Visibility
+    {"item_text": "TC_FTR_01: Footer is visible on page bottom", "category": "Footer UI"},
+    {"item_text": "TC_FTR_02: Casa Carigar logo visible in footer", "category": "Footer UI"},
+    {"item_text": "TC_FTR_04: Quick Links section visible", "category": "Footer UI"},
+    {"item_text": "TC_FTR_09: Support section visible", "category": "Footer UI"},
+    {"item_text": "TC_FTR_14: Account section visible", "category": "Footer UI"},
+    {"item_text": "TC_FTR_19: Subscribe section visible", "category": "Footer UI"},
+    {"item_text": "TC_FTR_24: Footer responsiveness on mobile/tablet", "category": "Footer UI"},
+    {"item_text": "TC_FTR_25: Footer text alignment correct", "category": "Footer UI"},
+    {"item_text": "TC_FTR_26: Footer link hover effects work", "category": "Footer UI"},
+    {"item_text": "TC_FTR_27: Footer links accessible via keyboard", "category": "Footer UI"},
+
+    # Navigation Links
+    {"item_text": "TC_FTR_03: Logo click navigates to Home", "category": "Footer Nav"},
+    {"item_text": "TC_FTR_05: 'Blogs' link works", "category": "Footer Nav"},
+    {"item_text": "TC_FTR_06: 'Brands' link works", "category": "Footer Nav"},
+    {"item_text": "TC_FTR_07: 'About Us' link works", "category": "Footer Nav"},
+    {"item_text": "TC_FTR_08: 'Contact' link works", "category": "Footer Nav"},
+    {"item_text": "TC_FTR_10: 'Refund Policy' link works", "category": "Footer Nav"},
+    {"item_text": "TC_FTR_11: 'Shipping Policy' link works", "category": "Footer Nav"},
+    {"item_text": "TC_FTR_12: 'Privacy Policy' link works", "category": "Footer Nav"},
+    {"item_text": "TC_FTR_13: 'Terms of Services' link works", "category": "Footer Nav"},
+    {"item_text": "TC_FTR_15: 'Create an Account' link works", "category": "Footer Nav"},
+    {"item_text": "TC_FTR_16: 'Manage Your Account' link works (if logged in)", "category": "Footer Nav"},
+    {"item_text": "TC_FTR_17: 'My Wishlist' link works", "category": "Footer Nav"},
+    {"item_text": "TC_FTR_18: 'Partner Onboarding' link works", "category": "Footer Nav"},
+
+    # Forms & Functionality
+    {"item_text": "TC_FTR_20: Email field accepts input", "category": "Footer Forms"},
+    {"item_text": "TC_FTR_21: Valid email subscription works", "category": "Footer Forms"},
+    {"item_text": "TC_FTR_22: Invalid email shows error", "category": "Footer Forms"},
+    {"item_text": "TC_FTR_23: Empty email submission shows validation", "category": "Footer Forms"}
 ]
 
 async def initialize_checklists(user_id: str):
