@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { 
+import {
   Activity, CheckCircle, RefreshCw, XCircle, Clock,
   ChevronRight, Play, Shield, AlertTriangle, Zap, Calendar
 } from 'lucide-react';
@@ -34,15 +34,32 @@ const DashboardPage = () => {
     }
   };
 
+  const [showEnvModal, setShowEnvModal] = useState(false);
+  const [selectedEnvId, setSelectedEnvId] = useState('');
+  const [pendingSuite, setPendingSuite] = useState(null);
+
   const runTests = async (suiteType) => {
     if (environments.length === 0) {
       alert('Please add a test environment first');
       return;
     }
+
+    if (environments.length > 1) {
+      setPendingSuite(suiteType);
+      setSelectedEnvId(environments[0].id);
+      setShowEnvModal(true);
+      return;
+    }
+
+    // Single environment - run immediately
+    executeRun(suiteType, environments[0].id);
+  };
+
+  const executeRun = async (suiteType, envId) => {
     setRunningTest(suiteType);
     try {
       const res = await axios.post(`${API}/runs`, {
-        environment_id: environments[0].id,
+        environment_id: envId,
         suite_type: suiteType
       });
       navigate('/dashboard/runs/' + res.data.id);
@@ -51,6 +68,8 @@ const DashboardPage = () => {
       alert('Failed to start test run');
     } finally {
       setRunningTest(null);
+      setShowEnvModal(false);
+      setPendingSuite(null);
     }
   };
 
@@ -79,7 +98,7 @@ const DashboardPage = () => {
       </div>
 
       <div className="quick-actions">
-        <button 
+        <button
           className="action-card daily"
           onClick={() => runTests('daily')}
           disabled={runningTest !== null}
@@ -92,8 +111,8 @@ const DashboardPage = () => {
           </div>
           {runningTest === 'daily' && <RefreshCw className="spin" size={20} />}
         </button>
-        
-        <button 
+
+        <button
           className="action-card weekly"
           onClick={() => runTests('weekly')}
           disabled={runningTest !== null}
@@ -144,7 +163,7 @@ const DashboardPage = () => {
           <h2>Recent Test Runs</h2>
           <Link to="/dashboard/runs" className="view-all">View all <ChevronRight size={16} /></Link>
         </div>
-        
+
         {recentRuns.length > 0 ? (
           <div className="runs-list">
             {recentRuns.map((run) => (
@@ -172,6 +191,38 @@ const DashboardPage = () => {
           </div>
         )}
       </div>
+
+      {/* Environment Selection Modal */}
+      {showEnvModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Select Environment</h2>
+            <p>Choose which environment to run tests against:</p>
+
+            <select
+              value={selectedEnvId}
+              onChange={(e) => setSelectedEnvId(e.target.value)}
+              className="env-select"
+            >
+              {environments.map(env => (
+                <option key={env.id} value={env.id}>
+                  {env.name} ({env.url})
+                </option>
+              ))}
+            </select>
+
+            <div className="modal-actions">
+              <button className="cancel-btn" onClick={() => setShowEnvModal(false)}>Cancel</button>
+              <button
+                className="start-btn"
+                onClick={() => executeRun(pendingSuite, selectedEnvId)}
+              >
+                Start Run <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
