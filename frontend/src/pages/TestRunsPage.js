@@ -17,7 +17,7 @@ export const TestRunsPage = () => {
 
   const fetchRuns = async () => {
     try {
-      const res = await axios.get(`${API}/runs`);
+      const res = await axios.get(`${API}/runs?t=${Date.now()}`);
       setRuns(res.data || []);
     } catch (e) {
       console.error('Failed to load runs:', e);
@@ -108,7 +108,7 @@ export const RunDetailPage = () => {
 
   const fetchRun = async () => {
     try {
-      const res = await axios.get(`${API}/runs/${runId}`);
+      const res = await axios.get(`${API}/runs/${runId}?t=${Date.now()}`);
       setRun(res.data);
     } catch (e) {
       console.error('Failed to load run:', e);

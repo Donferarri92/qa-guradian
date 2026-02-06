@@ -184,7 +184,15 @@ class QATestEngine:
         self.results = []
         
     async def __aenter__(self):
-        self.session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30))
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+        }
+        self.session = aiohttp.ClientSession(
+            headers=headers,
+            timeout=aiohttp.ClientTimeout(total=45),
+            connector=aiohttp.TCPConnector(ssl=False)
+        )
         return self
         
     async def __aexit__(self, exc_type, exc_val, exc_tb):
@@ -1201,15 +1209,17 @@ async def create_test_run(run_data: TestRunCreate, background_tasks: BackgroundT
     return run_dict
 
 @api_router.get("/runs")
-async def get_test_runs(user: dict = Depends(get_current_user), limit: int = 20):
+async def get_test_runs(response: Response, user: dict = Depends(get_current_user)):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     runs = await db.test_runs.find(
         {"user_id": user['id']},
         {"_id": 0}
-    ).sort("started_at", -1).to_list(limit)
+    ).sort("started_at", -1).to_list(100)
     return runs
 
 @api_router.get("/runs/{run_id}")
-async def get_test_run(run_id: str, user: dict = Depends(get_current_user)):
+async def get_test_run(run_id: str, response: Response, user: dict = Depends(get_current_user)):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     run = await db.test_runs.find_one({"id": run_id, "user_id": user['id']}, {"_id": 0})
     if not run:
         raise HTTPException(status_code=404, detail="Test run not found")
