@@ -35,11 +35,11 @@ const AuthPage = () => {
     <div className="auth-page" data-testid="auth-page">
       <div className="auth-container">
         <div className="auth-header">
-          <Shield className="auth-logo" size={48} />
+          <img src="/kuberha_logo.png" alt="Kuberha.ai" className="auth-logo-img" style={{ width: '80px', marginBottom: '1rem' }} />
           <h1>QA Guardian</h1>
-          <p>Automated QA Testing Platform</p>
+          <p>Powered by Kuberha.ai</p>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="auth-form">
           {!isLogin && (
             <div className="form-group">
@@ -76,14 +76,14 @@ const AuthPage = () => {
               data-testid="password-input"
             />
           </div>
-          
+
           {error && <div className="auth-error">{error}</div>}
-          
+
           <button type="submit" className="auth-button" disabled={loading} data-testid="auth-submit">
             {loading ? <RefreshCw className="spin" size={20} /> : (isLogin ? 'Sign in' : 'Create account')}
           </button>
         </form>
-        
+
         <div className="auth-switch">
           {isLogin ? "Don't have an account? " : "Already have an account? "}
           <button onClick={() => setIsLogin(!isLogin)} data-testid="auth-toggle">

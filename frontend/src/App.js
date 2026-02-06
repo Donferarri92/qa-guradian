@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, Link } from 'react-router-dom';
-import { 
+import {
   Shield, BarChart3, Play, CheckSquare, FileText, Settings, LogOut, Menu, X, RefreshCw
 } from 'lucide-react';
 import './App.css';
@@ -37,13 +37,13 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       <div className={`sidebar-overlay ${isOpen ? 'active' : ''}`} onClick={() => setIsOpen(false)} />
       <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
-          <Shield size={32} />
+          <img src="/kuberha_logo.png" alt="Kuberha" style={{ width: '40px' }} />
           <span>QA Guardian</span>
           <button className="sidebar-close" onClick={() => setIsOpen(false)}>
             <X size={24} />
           </button>
         </div>
-        
+
         <nav className="sidebar-nav">
           {navItems.map((item) => (
             <Link
@@ -58,7 +58,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             </Link>
           ))}
         </nav>
-        
+
         <div className="sidebar-footer">
           <div className="user-info">
             <div className="user-avatar">{user?.name?.charAt(0) || 'U'}</div>
@@ -76,22 +76,22 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  
+
   if (loading) {
     return <div className="loading-state"><RefreshCw className="spin" size={32} /> Loading...</div>;
   }
-  
+
   if (!user) {
     return <Navigate to="/login" replace />;
   }
-  
+
   return children;
 };
 
 // Dashboard Layout
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  
+
   return (
     <div className="dashboard-layout">
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
