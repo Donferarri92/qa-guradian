@@ -1215,85 +1215,56 @@ async def get_test_run(run_id: str, user: dict = Depends(get_current_user)):
 # ==================== CHECKLIST ROUTES ====================
 
 DAILY_CHECKLIST_ITEMS = [
-    # --- Critical Functionality ---
-    {"item_text": "Homepage loads successfully (200 OK)", "category": "Critical"},
-    {"item_text": "No critical console errors (Red logs)", "category": "Critical"},
-    {"item_text": "Login/Registration flows work correctly", "category": "Critical"},
-    {"item_text": "Add to Cart functions properly", "category": "Critical"},
-    {"item_text": "Checkout payment gateway loads", "category": "Critical"},
+    # --- Critical Smoke Tests (< 15 mins) ---
+    {"item_text": "Homepage loads successfully (200 OK)", "category": "Core Flow"},
+    {"item_text": "Login with valid credentials works", "category": "Core Flow"},
+    {"item_text": "Guest user can search for a product", "category": "Core Flow"},
+    {"item_text": "Add to Cart adds correct item/price", "category": "Core Flow"},
+    {"item_text": "Checkout page loads without crashing", "category": "Core Flow"},
+    
+    # --- Critical Integrations ---
+    {"item_text": "Payment gateway iframe/element loads", "category": "Integrations"},
+    {"item_text": "Search results return relevant products", "category": "Integrations"},
+    {"item_text": "Automated emails trigger on signup", "category": "Integrations"},
 
-    # --- Header & Navigation ---
-    {"item_text": "Logo links back to homepage", "category": "Navigation"},
-    {"item_text": "Main menu dropdowns open/close smoothly", "category": "Navigation"},
-    {"item_text": "Search bar suggestions appear on typing", "category": "Navigation"},
-    {"item_text": "Search results are relevant to query", "category": "Navigation"},
-    {"item_text": "Sticky header stays visible on scroll", "category": "Navigation"},
-    {"item_text": "Mobile hamburger menu works", "category": "Navigation"},
-
-    # --- Product Listing (PLP) ---
-    {"item_text": "Product images load (no broken icons)", "category": "PLP"},
-    {"item_text": "Sorting (Price, Newest) works accurately", "category": "PLP"},
-    {"item_text": "Filters (Category, Color) update results", "category": "PLP"},
-    {"item_text": "Pagination/Infinite scroll loads next items", "category": "PLP"},
-    {"item_text": "Quick View modal opens correctly", "category": "PLP"},
-
-    # --- Product Detail (PDP) ---
-    {"item_text": "Product title and price are correct", "category": "PDP"},
-    {"item_text": "Image gallery zoom/thumbnails work", "category": "PDP"},
-    {"item_text": "Variant selection (Size/Color) updates price", "category": "PDP"},
-    {"item_text": "'Out of Stock' logic works for unavailable items", "category": "PDP"},
-    {"item_text": "Related products section is populated", "category": "PDP"},
-    {"item_text": "Description/Reviews tabs toggle correctly", "category": "PDP"},
-
-    # --- Cart & Checkout ---
-    {"item_text": "Mini-cart updates immediately on add", "category": "Cart"},
-    {"item_text": "Cart page shows correct total calculation", "category": "Cart"},
-    {"item_text": "Update Quantity (+/-) reflects in total", "category": "Cart"},
-    {"item_text": "Remove item deletes from cart", "category": "Cart"},
-    {"item_text": "Coupon code field accepts valid codes", "category": "Checkout"},
-    {"item_text": "Shipping address validation triggers errors", "category": "Checkout"},
-    {"item_text": "Order success page shows Order ID", "category": "Checkout"},
-
-    # --- User Account ---
-    {"item_text": "Password reset email is triggered", "category": "Account"},
-    {"item_text": "Order history displays past orders", "category": "Account"},
-    {"item_text": "Profile details can be updated", "category": "Account"},
-    {"item_text": "Address book allows adding new address", "category": "Account"},
-
-    # --- Visual & UX (Minor) ---
-    {"item_text": "Favicon is visible in browser tab", "category": "Visual"},
-    {"item_text": "No horizontal scrolling on mobile view", "category": "Visual"},
-    {"item_text": "Fonts load correctly (no default times new roman)", "category": "Visual"},
-    {"item_text": "Buttons have hover/active states", "category": "Visual"},
-    {"item_text": "Breadcrumbs navigation is accurate", "category": "Visual"},
-    {"item_text": "Footer links (Terms, Privacy) are not broken", "category": "Visual"},
-    {"item_text": "Social media icons open in new tabs", "category": "Visual"},
-    {"item_text": "404 Page (broken link) is styled correctly", "category": "Visual"},
-
-    # --- Technical/Performance ---
-    {"item_text": "First Contentful Paint < 2.5s", "category": "Performance"},
-    {"item_text": "SSL Certificate is valid (HTTPS lock)", "category": "Security"},
-    {"item_text": "Meta titles/descriptions exist for SEO", "category": "SEO"},
-    {"item_text": "Cookie consent appears if required", "category": "Compliance"}
+    # --- Mobile & UI ---
+    {"item_text": "Mobile hamburger menu opens/closes", "category": "UI/UX"},
+    {"item_text": "Main navigation links are not broken", "category": "UI/UX"},
+    {"item_text": "Product images load (no broken placeholders)", "category": "UI/UX"},
+    
+    # --- Technical ---
+    {"item_text": "No 'Red' console errors on Homepage", "category": "Technical"},
+    {"item_text": "API returns 200 for core endpoints", "category": "Technical"}
 ]
 
 WEEKLY_CHECKLIST_ITEMS = [
-    {"item_text": "Run Lighthouse performance audit", "category": "Performance"},
-    {"item_text": "Check Core Web Vitals scores", "category": "Performance"},
-    {"item_text": "Verify all product pages load", "category": "E-commerce"},
-    {"item_text": "Test complete checkout flow", "category": "E-commerce"},
-    {"item_text": "Verify payment gateway connection", "category": "E-commerce"},
-    {"item_text": "Check SEO meta tags on all pages", "category": "SEO"},
-    {"item_text": "Verify sitemap.xml is updated", "category": "SEO"},
-    {"item_text": "Check robots.txt configuration", "category": "SEO"},
-    {"item_text": "Test all form submissions", "category": "Functionality"},
-    {"item_text": "Verify email notifications work", "category": "Functionality"},
-    {"item_text": "Check security headers", "category": "Security"},
-    {"item_text": "Test on Chrome, Firefox, Safari", "category": "Cross-browser"},
-    {"item_text": "Test on mobile devices", "category": "Mobile"},
-    {"item_text": "Check image optimization", "category": "Performance"},
-    {"item_text": "Verify 404 page works", "category": "Functionality"},
-    {"item_text": "Test accessibility with screen reader", "category": "Accessibility"}
+    # --- Deep Regression (1-2 Hours) ---
+    # Functionality Deep Dive
+    {"item_text": "Advanced Search (Filters + Sorting combined) works", "category": "Functionality"},
+    {"item_text": "Cart logic (Update Qty, Remove, Coupons) works", "category": "Functionality"},
+    {"item_text": "User Profile (Edit Address, Change Password) works", "category": "Functionality"},
+    {"item_text": "Wishlist add/remove/move-to-cart works", "category": "Functionality"},
+    {"item_text": "Submit Review with/without photos works", "category": "Functionality"},
+
+    # Cross-Browser & Device
+    {"item_text": "Checkout flow works on Safari (iOS)", "category": "Cross-Browser"},
+    {"item_text": "Checkout flow works on Chrome (Android)", "category": "Cross-Browser"},
+    {"item_text": "Checkout flow works on Firefox (Desktop)", "category": "Cross-Browser"},
+
+    # Business Logic
+    {"item_text": "Out of Stock items disable 'Add to Cart'", "category": "Business Logic"},
+    {"item_text": "Automated Discounts apply correctly", "category": "Business Logic"},
+    {"item_text": "Shipping calculation based on location is correct", "category": "Business Logic"},
+
+    # Security & Compliance
+    {"item_text": "SQL Injection check on Search input", "category": "Security"},
+    {"item_text": "Cookie Consent banner compliance", "category": "Compliance"},
+    {"item_text": "Privacy Policy / Terms links work", "category": "Compliance"},
+
+    # Performance & SEO
+    {"item_text": "Lighthouse Score > 90 for SEO", "category": "Performance"},
+    {"item_text": "No 404 links found in footer/blog", "category": "SEO"},
+    {"item_text": "Meta tags exist for all new products", "category": "SEO"}
 ]
 
 async def initialize_checklists(user_id: str):
