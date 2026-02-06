@@ -86,3 +86,4 @@ android-sdk/ -e
 *.env
 *.env.*
 .netlify/
+*.pdf
