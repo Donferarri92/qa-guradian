@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, BackgroundTasks, Query
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, BackgroundTasks, Query, Response
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -1103,7 +1103,10 @@ async def get_me(user: dict = Depends(get_current_user)):
 # ==================== ENVIRONMENT ROUTES ====================
 
 @api_router.get("/environments")
-async def get_environments(user: dict = Depends(get_current_user)):
+async def get_environments(response: Response, user: dict = Depends(get_current_user)):
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
     environments = await db.environments.find({"user_id": user['id']}, {"_id": 0}).to_list(100)
     return environments
 

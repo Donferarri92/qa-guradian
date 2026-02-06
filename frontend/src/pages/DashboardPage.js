@@ -22,8 +22,8 @@ const DashboardPage = () => {
   const fetchData = async () => {
     try {
       const [statsRes, envRes] = await Promise.all([
-        axios.get(`${API}/dashboard/stats`),
-        axios.get(`${API}/environments`)
+        axios.get(`${API}/dashboard/stats?t=${Date.now()}`),
+        axios.get(`${API}/environments?t=${Date.now()}`)
       ]);
       setStats(statsRes.data || { total_runs: 0, completed_runs: 0, avg_pass_rate: 0, recent_runs: [] });
       setEnvironments(envRes.data || []);
